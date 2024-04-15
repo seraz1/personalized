@@ -1,6 +1,6 @@
 package com.personalize.api.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,11 +14,15 @@ import com.personalize.api.entity.ShopperProductList;
 import com.personalize.api.exceptions.InvalidRequestException;
 import com.personalize.api.service.ProductService;
 
+import lombok.AllArgsConstructor;
+
 @RestController
 @RequestMapping("/internal")
+@AllArgsConstructor
 public class InternalApiController {
-	@Autowired
+	
 	private ProductService productService;
+	private ModelMapper modelMapper;
 
 	@PostMapping("/product-list")
 	public ResponseEntity<Void> receiveShopperProductList(@RequestBody ShopperProductList productList) {
@@ -33,11 +37,9 @@ public class InternalApiController {
 			if (productDTO.getCategory() == null || productDTO.getBrand() == null) {
 	            throw new InvalidRequestException("Product name and price are required");
 	        }
-			Product product = new Product();
-			product.setProductId(productDTO.getProductId());
-			product.setCategory(productDTO.getCategory());
-			product.setBrand(productDTO.getBrand());
-
+			
+			Product product =modelMapper.map(productDTO, Product.class);
+			
 			productService.saveProduct(product);
 
 			return ResponseEntity.status(HttpStatus.CREATED).body("Product saved successfully");
